@@ -1,3 +1,5 @@
 # Biochemistry_Pack
 
-__Biochemistry_Pack__ 
+by @AlejandroCebrianValle
+
+*Biochemistry_Pack* es un  conjunto de herramientas para los laboratorios de Bioquímica.
