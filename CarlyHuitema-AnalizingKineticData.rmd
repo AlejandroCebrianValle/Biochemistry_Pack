@@ -1,0 +1,73 @@
+---
+title: Comentario de Huitema Carly, Horsman Geoff; *Analizing Kinetic Data Using the Powerful Ststistical Capabilities of R*; bioRxiv 316588.
+author: "Alejandro Cebrián del Valle"
+date: "30/09/2020"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+```
+
+# *Script* para el análisis de datos de actividad
+
+Las cinéticas enzimáticas son una poderosa herramienta para el conocimiento de las dinámicas enzimáticas de catálisis, regulación e inhibición. La popularización de los trabajos de Cook & Cleland, 2007, han hecho que se precise herramientas más democráticas para análisis de regresión no lineal. Aunque se han hecho analisis en Excel, mediante R, una herramienta multiplataforma permite unos buenos resultados y una buena replicabilidad.
+
+## Creación de gráficos y ajuste de la Ecuación de Michaellis-Menten
+
+El paso previo al ajuste de la ecuación de Michaellis-Menten suele ser la creación de un gráfico de concentración del sustrato frente a ratio de conversión (generalmente en UI o $\mu$M / min).
+
+```{r}
+# Data probe
+conc.uM <- c(0.5, 1, 2.5, 3.5, 5, 7.5, 10, 15, 25, 50, 70, 75, 100)
+rate <- c(0.6, 1.1, 2.1, 2.3, 3.7, 3.0, 4.3, 4.8, 5.3, 6.0, 5.1, 5.7, 5.8)
+# creation of data frame
+expl.df <- data.frame(conc.uM, rate)
+# ploting data
+plot(conc.uM, rate, 
+    main = "Plot Title",
+    xlab = "conc (uM)",
+    ylab = "rate (uM/min)",
+    lines(conc.uM, rate, lty = "dotted", col = "red"))
+    # Upper line creates a line which joins all points with a red-dotted line
+lines(x,y, lty = "dotted", col = "blue")
+```
+
+
+
+```{r}
+### Fit Michelis-Menten equation
+mn.nls <- nls(rate ~ (Vmax * conc.uM / (Km + conc.uM)),
+              data = expl.df,
+              start = list(Km = 5, Vmax = 6))
+summary(mn.nls)
+#### Extraction coefficients
+Km <- unname(coef(mn.nls) ["Km"])
+Vmax <- unname(coef(mn.nls)["Vmax"])
+#### Plotting data and line of best fit
+x <- c(0:100)
+y <- (Vmax * x / (Km + x))
+plot(conc.uM, rate, 
+     main = "Plot Title",
+     xlab = "conc (uM)",
+     ylab = "rate (uM/min)")
+lines(x,y, lty = "dotted", col = "blue")
+coef(mn.nls)
+#### Confidence intervals of parameters
+confint(mn.nls)
+#### Look at residuals and plot
+mn.resid <- resid(mn.nls)
+plot(expl.df$conc.uM, mn.resid)
+#### add weighting to fit
+expl.df$weight <- 1/expl.df$conc^2
+mn.weight.nls <- nls(rate ~ (Vmax * conc.uM / (Km + conc.uM)),
+                     data = expl.df,
+                     start = list(Km = 5, Vmax = 6),
+                     weight = expl.df$weight)
+summary(mn.weight.nls)
+```
+
