@@ -34,7 +34,18 @@ plot(conc.uM, rate,
     ylab = "rate (uM/min)",
     lines(conc.uM, rate, lty = "dotted", col = "red"))
     # Upper line creates a line which joins all points with a red-dotted line
-lines(x,y, lty = "dotted", col = "blue")
+### Fit Michelis-Menten equation
+mn.nls <- nls(rate ~ (Vmax * conc.uM / (Km + conc.uM)),
+              data = expl.df,
+              start = list(Km = 5, Vmax = 6))
+summary(mn.nls)
+#### Extraction coefficients
+Km <- unname(coef(mn.nls) ["Km"])
+Vmax <- unname(coef(mn.nls)["Vmax"])
+#### Plotting data and line of best fit
+x <- c(0:100)
+y <- (Vmax * x / (Km + x))
+lines(x, y, lty = "dotted", col = "blue")
 ```
 
 
